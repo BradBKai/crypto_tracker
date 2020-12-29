@@ -31,22 +31,14 @@ five_greater_list = []
 crypto_info = []
 crypto_stats = {}
 
-# placeholders for previous iteration of lists in ifttt_notice(), requires one iteration before comparison kicks in
-previous_prime = []
-previous_greater = []
-previous_less = []
-
 # boolean used for toggling whether to post a notice
 big_change = False
-
-# boolean used to toggle to sleep longer
-sleep_longer = False
 
 # beautiful soup webscraping
 def soup_tasting():
 
     # grab website data
-    website_request = requests.get("https://coinmarketcap.com/")
+    website_request = requests.get("WEBSITE_TO_SCRAPE")
 
     # scrape website
     soup = BeautifulSoup(website_request.text,'lxml')
@@ -126,11 +118,6 @@ def message():
 
 # ifttt webhook      
 def ifttt_notice():
-    global sleep_longer
-    global previous_prime
-    global previous_greater
-    global previous_less
-    print(previous_prime)
 
     # variable for ifttt webhook
     ifttt_webhook_url = 'https://maker.ifttt.com/trigger/crypto_tracker/with/key/f1wDWGuolNmEfdJtok_ko'
@@ -145,39 +132,15 @@ def ifttt_notice():
     print('post ifttt')
     requests.post(ifttt_webhook_url,data=data)
     
-    # logic states to compare len of assigned variables in previous iteration to current values
-    print('len comparison')
-    print(sleep_longer)
-
-    # if False then assign current to holder variables for next loop
-    if len(previous_prime) == len(prime_list) or len(previous_greater) == len(five_greater_list) or len(previous_less) == len(five_less_list):
-
-       # assign placeholder with current lists
-        previous_prime = prime_list
-        previous_greater = five_greater_list
-        previous_less = five_less_list
-        print(previous_prime)
-
-        # clear lists so it doesn't infinitely append in while loop
-        prime_list.clear()
-        five_less_list.clear()
-        five_greater_list.clear()
-        print('cleared lists')
-
-        # sleep boolean set to True since no difference when previous len iteration was compared to current list
-        sleep_longer = True
-        return sleep_longer
-    else:
-        # sleep boolean set to False since there was a difference in list len comparisons
-        sleep_longer = False
-        return sleep_longer
+    # clear lists so it doesn't infinitely append in while loop
+    prime_list.clear()
+    five_less_list.clear()
+    five_greater_list.clear()
+    #print('cleared lists')
 
 # main
 def __main__():
     global big_change
-    global sleep_longer
-    print('main')
-    print(sleep_longer)
 
     # while loop to have it keep checking every 60 seconds
     while True:
@@ -197,23 +160,8 @@ def __main__():
             # set to sleep for 5 minutes
             time.sleep(300)
         else:
-            # sleep boolean True indicates no new coins so sleep longer
-            if sleep_longer == True:
-                print('else')
-                print(sleep_longer)
-                sleep_longer = False
-                print('While loop sleeping for 360 seconds')
-
-                # set to sleep for half hour
-                time.sleep(1800)
-
-            # sleep bolean == False so there were new coins with percent changes
-            else:
-                sleep_longer = False
-                print('While loop sleeping for 60 seconds')
-
-                # set to sleep for 1 hour
-                time.sleep(3600)
+            # set to sleep for 1 hour
+            time.sleep(3600)
 
 if __name__ == "__main__":
     __main__()
