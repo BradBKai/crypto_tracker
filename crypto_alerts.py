@@ -1,60 +1,9 @@
 '''
-Crypto tracker Version 1
+Crypto tracker Version 1.2
 
 Webscrapes crypto market capitalization site with beautiful soup then sends out notices in IFTTT via webhooks and sms notification apps.
 Notifications occur in mobile phone.  Notifications require installation of IFTTT app on the mobile phone.
 
-Future improvements:
-Sort values from highest to lowest
-
-By: Brad Kai
-
-'''
-
-import requests
-from bs4 import BeautifulSoup
-import json
-import time
-
-# initialize variables
-# soup_tasting() variables
-website_request = ''
-soup = ''
-data = ''
-raw_data = ''
-coin_data = ''
-
-# message(), ifttt_notice() varibles
-prime_list = []
-five_less_list = []
-five_greater_list = []
-crypto_info = []
-crypto_stats = {}
-
-# beautiful soup webscraping
-def soup_tasting():
-
-    # grab website data
-    website_request = requests.get("https://coinmarketcap.com/")
-
-    # scrape website
-    soup = BeautifulSoup(website_request.text,'lxml')
-    raw_data = soup.find("script",id = "__NEXT_DATA__",type = "application/json")
-    coin_data = json.loads(raw_data.contents[0])
-
-    # scrape the websites
-    crypto_info = coin_data['props']['initialState']['cryptocurrency']['listingLatest']['data']
-
-    # for loop to pick the data of the crypto coins
-    for item in crypto_info:
-        '''
-Crypto tracker Version 1
-
-Webscrapes crypto market capitalization site with beautiful soup then sends out notices in IFTTT via webhooks and sms notification apps.
-Notifications occur in mobile phone.  Notifications require installation of IFTTT app on the mobile phone.
-
-Future improvements:
-Sort values from highest to lowest
 
 By: Brad Kai
 
