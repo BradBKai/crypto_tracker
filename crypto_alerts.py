@@ -1,9 +1,11 @@
 '''
-Crypto tracker Version 1.2
+Crypto tracker Version 1.3
 
 Webscrapes crypto market capitalization site with beautiful soup then sends out notices in IFTTT via webhooks and sms notification apps.
 Notifications occur in mobile phone.  Notifications require installation of IFTTT app on the mobile phone.
 
+Future improvements:
+Sort values from highest to lowest
 
 By: Brad Kai
 
@@ -47,74 +49,57 @@ def soup_tasting():
     for item in crypto_info:
         crypto_stats[item['slug']] = {'name':item['name'],'symbol':item['symbol'],'price':item['quote']['USD']['price'],'1_hour_percent':item['quote']['USD']['percent_change_1h'],'24_hour_percent':item['quote']['USD']['percent_change_24h']}
 
+def process_message(key):
+    # round values primarily due to IFTTT mobile notifications display length restrictions
+    crypto_name = key
+    crypto_symbol = crypto_stats[key]['symbol']
+    price = round(crypto_stats[key]['price'],2)
+    percent_1h = round(crypto_stats[key]['1_hour_percent'],2)
+    percent_24h = round(crypto_stats[key]['24_hour_percent'],2)
+    return key.capitalize() + " (" + str(crypto_symbol) + ") is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
+
 # identify particular coins or large changes in percent then format message
-def message():
+def create_message(dict):
 
     # for loop to cycle throught the key/value in crypto_stats dictionary
-    for key, value in crypto_stats.items():
+    for key, value in dict.items():
 
         # key is bitcoin
         if key == 'bitcoin':
 
             # round values primarily due to IFTTT mobile notifications display length restrictions
-            crypto_name = key
-            crypto_symbol = crypto_stats[key]['symbol']
-            price = round(crypto_stats[key]['price'],2)
-            percent_1h = round(crypto_stats[key]['1_hour_percent'],2)
-            percent_24h = round(crypto_stats[key]['24_hour_percent'],2)
-            bit_msg = key.capitalize() + " (" + str(crypto_symbol) + ") is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
+            bit_msg = process_message(key)
             prime_list.append(bit_msg)
 
         # key is ethereum
         elif key == 'ethereum':
 
             # round values primarily due to IFTTT mobile notifications display length restrictions
-            crypto_name = key
-            crypto_symbol = crypto_stats[key]['symbol']
-            price = round(crypto_stats[key]['price'],2)
-            percent_1h = round(crypto_stats[key]['1_hour_percent'],2)
-            percent_24h = round(crypto_stats[key]['24_hour_percent'],2)
-            eth_msg = key.capitalize() + " (" + str(crypto_symbol) + ") is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
+            eth_msg = process_message(key)
             prime_list.append(eth_msg)
-
 
         # key is cardano
         elif key == 'cardano':
 
             # round values primarily due to IFTTT mobile notifications display length restrictions
-            crypto_name = key
-            crypto_symbol = crypto_stats[key]['symbol']
-            price = round(crypto_stats[key]['price'],2)
-            percent_1h = round(crypto_stats[key]['1_hour_percent'],2)
-            percent_24h = round(crypto_stats[key]['24_hour_percent'],2)
-            card_msg = key.capitalize() + " (" + str(crypto_symbol) + ") is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
+            card_msg = process_message(key)
             prime_list.append(card_msg)
 
         # any coin with an absolute value greater/equal to 1 but not greater/equal to 5 in the past hour
         elif abs(crypto_stats[key]['1_hour_percent']) >= 1 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano':
 
             # compare absolute values of 1 hour to 24 hour percent changes
-            if abs(crypto_stats[key]['1_hour_percent'] - crypto_stats[key]['24_hour_percent']) <= 5:
+            if abs(crypto_stats[key]['1_hour_percent']) <= 5:
 
                 # round values primarily due to IFTTT mobile notifications display length restrictions
-                crypto_name = key
-                crypto_symbol = crypto_stats[key]['symbol']
-                price = round(crypto_stats[key]['price'],2)
-                percent_1h = round(crypto_stats[key]['1_hour_percent'],2)
-                percent_24h = round(crypto_stats[key]['24_hour_percent'],2)
-                five_less_msg = key.capitalize() + " (" + str(crypto_symbol) + ") is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
+                five_less_msg = process_message(key)
                 five_less_list.append(five_less_msg)
 
             # any coin greater than 5 percent change in the past hour
-            elif abs(crypto_stats[key]['1_hour_percent'] - crypto_stats[key]['24_hour_percent']) > 5:
+            elif abs(crypto_stats[key]['1_hour_percent']) > 5 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano':
 
                 # round values primarily due to IFTTT mobile notifications display length restrictions
-                crypto_name = key
-                crypto_symbol = crypto_stats[key]['symbol']
-                price = round(crypto_stats[key]['price'],2)
-                percent_1h = round(crypto_stats[key]['1_hour_percent'],2)
-                percent_24h = round(crypto_stats[key]['24_hour_percent'],2)
-                five_greater_msg = key.capitalize() + " (" + str(crypto_symbol) + ") is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
+                five_greater_msg = process_message(key)
                 five_greater_list.append(five_greater_msg)
 
             # continue for loop since criteria was not met
@@ -146,14 +131,14 @@ def ifttt_notice():
 # main
 def __main__():
 
-    # while loop to have it keep checking every 60 seconds
+    # while loop to have it keep checking
     while True:
 
         # call functions
         soup_tasting()
-        message()
+        create_message(crypto_stats)
 
-        # condition checks for a change in bitcoin or ethereum then kicks off a notice then puts loop to sleep
+        # condition checks for a change in bitcoin, cardano or ethereum then kicks off a notice then puts loop to sleep
         if abs(crypto_stats['bitcoin']['1_hour_percent']) >= 1 or abs(crypto_stats['ethereum']['1_hour_percent']) >= 1 or abs(crypto_stats['cardano']['1_hour_percent']) >= 1:
             
             # post notice in IFTTT
@@ -161,8 +146,8 @@ def __main__():
             print('bit/eth/card notice sent out')
 
             # sleep while loop for 60 seconds
-            print('sleep 60 seconds')
-            time.sleep(60)
+            print('sleep 5 mins/300 seconds')
+            time.sleep(300)
 
         else:
             
