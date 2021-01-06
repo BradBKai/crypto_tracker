@@ -21,7 +21,7 @@ data = ''
 raw_data = ''
 coin_data = ''
 
-# message(), ifttt_notice() varibles
+# create_message(), ifttt_notice() varibles
 prime_list = []
 five_less_list = []
 five_greater_list = []
@@ -126,8 +126,10 @@ def ifttt_notice():
 
 # main
 def __main__():
+    # local variables
     previous_dict = {}
     new_dict = {}
+    
     # while loop to have it keep checking every 60 seconds
     while True:
 
