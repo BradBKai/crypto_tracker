@@ -1,8 +1,11 @@
 '''
-Crypto tracker Version 1.4
+Crypto tracker Version 1.3
 
 Webscrapes crypto market capitalization site with beautiful soup then sends out notices in IFTTT via webhooks and sms notification apps.
 Notifications occur in mobile phone.  Notifications require installation of IFTTT app on the mobile phone.
+
+Future improvements:
+Sort values from highest to lowest
 
 By: Brad Kai
 
@@ -21,7 +24,7 @@ data = ''
 raw_data = ''
 coin_data = ''
 
-# create_message(), ifttt_notice() varibles
+# message(), ifttt_notice() varibles
 prime_list = []
 five_less_list = []
 five_greater_list = []
@@ -58,8 +61,9 @@ def process_message(key):
 # identify particular coins or large changes in percent then format message
 def create_message(dict):
 
-    # for loop to cycle throught the key/value is(crypto_stats dictionary
+    # for loop to cycle throught the key/value in crypto_stats dictionary
     for key, value in dict.items():
+
         # key is bitcoin
         if key == 'bitcoin':
 
@@ -82,17 +86,17 @@ def create_message(dict):
             prime_list.append(card_msg)
 
         # any coin with an absolute value greater/equal to 1 but not greater/equal to 5 in the past hour
-        elif abs(dict[key]['1_hour_percent']) >= 1 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano':
+        elif abs(crypto_stats[key]['1_hour_percent']) >= 1 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano':
 
             # compare absolute values of 1 hour to 24 hour percent changes
-            if abs(dict[key]['1_hour_percent']) <= 5:
+            if abs(crypto_stats[key]['1_hour_percent']) <= 5:
 
                 # round values primarily due to IFTTT mobile notifications display length restrictions
                 five_less_msg = process_message(key)
                 five_less_list.append(five_less_msg)
 
             # any coin greater than 5 percent change in the past hour
-            elif abs(dict[key]['1_hour_percent']) > 5 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano':
+            elif abs(crypto_stats[key]['1_hour_percent']) > 5 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano':
 
                 # round values primarily due to IFTTT mobile notifications display length restrictions
                 five_greater_msg = process_message(key)
@@ -113,7 +117,7 @@ def ifttt_notice():
     ifttt_webhook_url = 'https://maker.ifttt.com/trigger/crypto_tracker/with/key/f1wDWGuolNmEfdJtok_ko'
 
     # lists assigned to data values
-    data = {'value1' : prime_list, 'value2' : five_greater_list, 'value3' : "not used yet"}
+    data = {'value1' : prime_list, 'value2' : five_greater_list, 'value3' : "To be implemented later"}
 
     # posts data and starts up webhook to notify
     print('post ifttt')
@@ -126,44 +130,33 @@ def ifttt_notice():
 
 # main
 def __main__():
-    # local variables
-    previous_dict = {}
-    new_dict = {}
-    
-    # while loop to have it keep checking every 60 seconds
+
+    # while loop to have it keep checking
     while True:
 
         # call functions
         soup_tasting()
+        create_message(crypto_stats)
 
-        # if statement for comparison of percentage changes from previous loop
-        if len(previous_dict) != 0:
-            for key, value in previous_dict.items():
-
-                if previous_dict[key]['1_hour_percent'] != crypto_stats[key]['1_hour_percent']:
-                    new_dict[key] = crypto_stats[key]
-                    
-                else:
-                    continue
+        # condition checks for a change in bitcoin, cardano or ethereum then kicks off a notice then puts loop to sleep
+        if abs(crypto_stats['bitcoin']['1_hour_percent']) >= 1 or abs(crypto_stats['ethereum']['1_hour_percent']) >= 1 or abs(crypto_stats['cardano']['1_hour_percent']) >= 1:
             
-            # post contents of new_dict to IFTTT
-            create_message(new_dict)
+            # post notice in IFTTT
             ifttt_notice()
+            print('bit/eth/card notice sent out')
 
-            # put while loop to slee for 5 minutes
+            # sleep while loop for 60 seconds
+            print('sleep 5 mins/300 seconds')
             time.sleep(300)
 
         else:
             
-            # post contents of crypto_stats if previous_dict is empty
-            create_message(crypto_stats)
+            #post notice in IFTTT 
             ifttt_notice()
-            previous_dict.clear()
-            previous_dict = crypto_stats
- 
-            # sleep while loop for 60 seconds
-            print('sleep 60 seconds')
-            time.sleep(60)
+
+            # sleep while loop for 1 hour
+            print('if while sleeps for 1 hour/3600 seconds')
+            time.sleep(3600)
 
 if __name__ == "__main__":
     __main__()
