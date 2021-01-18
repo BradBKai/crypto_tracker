@@ -1,5 +1,5 @@
 '''
-Crypto tracker Version 1.3
+Crypto tracker Version 1.4
 
 Webscrapes crypto market capitalization site with beautiful soup then sends out notices in IFTTT via webhooks and sms notification apps.
 Notifications occur in mobile phone.  Notifications require installation of IFTTT app on the mobile phone.
@@ -68,8 +68,8 @@ def create_message(dict):
         if key == 'bitcoin':
 
             # round values primarily due to IFTTT mobile notifications display length restrictions
-            bit_msg = process_message(key)
-            prime_list.append(bit_msg)
+            btc_msg = process_message(key)
+            prime_list.append(btc_msg)
 
         # key is ethereum
         elif key == 'ethereum':
@@ -82,11 +82,18 @@ def create_message(dict):
         elif key == 'cardano':
 
             # round values primarily due to IFTTT mobile notifications display length restrictions
-            card_msg = process_message(key)
-            prime_list.append(card_msg)
+            ada_msg = process_message(key)
+            prime_list.append(ada_msg)
+        
+        # key is polkadot
+        elif key == 'polkadot':
+
+            # round values primarily due to IFTTT mobile notifications display length restrictions
+            dot_msg = process_message(key)
+            prime_list.append(dot_msg)
 
         # any coin with an absolute value greater/equal to 1 but not greater/equal to 5 in the past hour
-        elif abs(crypto_stats[key]['1_hour_percent']) >= 1 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano':
+        elif abs(crypto_stats[key]['1_hour_percent']) >= 1 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano' and not key == 'polkadot':
 
             # compare absolute values of 1 hour to 24 hour percent changes
             if abs(crypto_stats[key]['1_hour_percent']) <= 5:
@@ -96,7 +103,7 @@ def create_message(dict):
                 five_less_list.append(five_less_msg)
 
             # any coin greater than 5 percent change in the past hour
-            elif abs(crypto_stats[key]['1_hour_percent']) > 5 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano':
+            elif abs(crypto_stats[key]['1_hour_percent']) > 5 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano' and not key == 'polkadot':
 
                 # round values primarily due to IFTTT mobile notifications display length restrictions
                 five_greater_msg = process_message(key)
@@ -139,11 +146,11 @@ def __main__():
         create_message(crypto_stats)
 
         # condition checks for a change in bitcoin, cardano or ethereum then kicks off a notice then puts loop to sleep
-        if abs(crypto_stats['bitcoin']['1_hour_percent']) >= 1 or abs(crypto_stats['ethereum']['1_hour_percent']) >= 1 or abs(crypto_stats['cardano']['1_hour_percent']) >= 1:
+        if abs(crypto_stats['bitcoin']['1_hour_percent']) >= 1 or abs(crypto_stats['ethereum']['1_hour_percent']) >= 1 or abs(crypto_stats['cardano']['1_hour_percent']) >= 1 or abs(crypto_stats['polkadot']['1_hour_percent']):
             
             # post notice in IFTTT
             ifttt_notice()
-            print('bit/eth/card notice sent out')
+            print('btc/eth/ada/dot notice sent out')
 
             # sleep while loop for 60 seconds
             print('sleep 5 mins/300 seconds')
