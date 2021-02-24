@@ -1,11 +1,8 @@
 '''
-Crypto tracker Version 1.4
+Crypto tracker Version 1.4.1
 
 Webscrapes crypto market capitalization site with beautiful soup then sends out notices in IFTTT via webhooks and sms notification apps.
 Notifications occur in mobile phone.  Notifications require installation of IFTTT app on the mobile phone.
-
-Future improvements:
-Sort values from highest to lowest
 
 By: Brad Kai
 
@@ -47,15 +44,15 @@ def soup_tasting():
 
     # for loop to pick the data of the crypto coins
     for item in crypto_info:
-        crypto_stats[item['slug']] = {'name':item['name'],'symbol':item['symbol'],'price':item['quote']['USD']['price'],'1_hour_percent':item['quote']['USD']['percent_change_1h'],'24_hour_percent':item['quote']['USD']['percent_change_24h']}
+        crypto_stats[item['slug']] = {'name':item['name'],'symbol':item['symbol'],'price':item['quote']['USD']['price'],'1_hour_percent':item['quote']['USD']['percentChange1h'],'24_hour_percent':item['quote']['USD']['percentChange24h']}
 
 def process_message(key):
     # round values primarily due to IFTTT mobile notifications display length restrictions
     crypto_name = key
     crypto_symbol = crypto_stats[key]['symbol']
-    price = round(crypto_stats[key]['price'],2)
-    percent_1h = round(crypto_stats[key]['1_hour_percent'],2)
-    percent_24h = round(crypto_stats[key]['24_hour_percent'],2)
+    price = round(crypto_stats[key]['price'],3)
+    percent_1h = round(crypto_stats[key]['1_hour_percent'],3)
+    percent_24h = round(crypto_stats[key]['24_hour_percent'],3)
     return key.capitalize() + " (" + str(crypto_symbol) + ") is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
 
 # identify particular coins or large changes in percent then format message
