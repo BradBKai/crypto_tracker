@@ -1,11 +1,10 @@
 '''
-Crypto tracker Version 1.4.3
+Crypto tracker Version 1.4.4
 
 Webscrapes crypto market capitalization site with beautiful soup then sends out notices in IFTTT via webhooks and sms notification apps.
 Notifications occur in mobile phone.  Notifications require installation of IFTTT app on the mobile phone.
 
-Update for 1.4.3.  Scraping up to two pages.  Added loopring and stacks to main posting.
-By: Brad Kai
+Update for 1.4.4  Added Vechain to primary list.  Eliminated slug in notification message to conserve space when texted.
 
 '''
 
@@ -36,6 +35,7 @@ def soup_tasting():
     # grab website data
     for page in range(1, 3):
         website_request = requests.get(url + '?page=' + str(page))
+
         # scrape website
         soup = BeautifulSoup(website_request.text,'lxml')
         print(website_request.text)
@@ -54,7 +54,7 @@ def process_message(key):
     price = round(crypto_stats[key]['price'],3)
     percent_1h = round(crypto_stats[key]['1_hour_percent'],3)
     percent_24h = round(crypto_stats[key]['24_hour_percent'],3)
-    return key.capitalize() + " (" + str(crypto_symbol) + ") is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
+    return str(crypto_symbol) + " is $" + str(price) + ", 1 hour: " + str(percent_1h) +"%," + " 24 hour: " + str(percent_24h) +"%."
 
 # identify particular coins or large changes in percent then format message
 def create_message(dict):
@@ -104,8 +104,15 @@ def create_message(dict):
             stx_msg = process_message(key)
             prime_list.append(stx_msg)
 
+        # key is stacks
+        elif key == 'vechain':
+
+            # round values primarily due to IFTTT mobile notifications display length restrictions
+            vet_msg = process_message(key)
+            prime_list.append(vet_msg)
+
         # any coin with an absolute value greater/equal to 1 but not greater/equal to 5 in the past hour
-        elif abs(crypto_stats[key]['1_hour_percent']) >= 1 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano' and not key == 'polkadot-new' and not key == 'loopring' and not key == 'stacks':
+        elif abs(crypto_stats[key]['1_hour_percent']) >= 1 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano' and not key == 'polkadot-new' and not key == 'loopring' and not key == 'stacks' and not key == 'vechain':
 
             # compare absolute values of 1 hour to 24 hour percent changes
             if abs(crypto_stats[key]['1_hour_percent']) <= 5:
@@ -115,7 +122,7 @@ def create_message(dict):
                 five_less_list.append(five_less_msg)
 
             # any coin greater than 5 percent change in the past hour
-            elif abs(crypto_stats[key]['1_hour_percent']) > 5 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano' and not key == 'polkadot-new' and not key == 'loopring' and not key == 'stacks':
+            elif abs(crypto_stats[key]['1_hour_percent']) > 5 and not key == 'bitcoin' or not key == 'ethereum' and not key == 'cardano' and not key == 'polkadot-new' and not key == 'loopring' and not key == 'stacks' and not key == 'vechain':
 
                 # round values primarily due to IFTTT mobile notifications display length restrictions
                 five_greater_msg = process_message(key)
